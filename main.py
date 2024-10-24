@@ -6,6 +6,8 @@ from flask_cors import CORS
 import random
 import json
 
+# TODO: Accounts and authentication :)  
+
 app = Flask(__name__)
 CORS(app)  
 
@@ -13,14 +15,14 @@ CORS(app)
 def hello_world():
     return "<p>Hello, World!</p>"
     
-@app.route("/games") 
-def games():
-    return random.randint(0,100) # :)
+@app.route("/sample")
+def sample():
+    return random.randint(0,100) # :DD
 
 @app.route("/igdb-covers", methods=['GET'])
 def igdb_proxy():
     conn = http.client.HTTPSConnection("api.igdb.com")
-    payload = "fields name,cover.*,summary;\nwhere category = 0 & platforms = 48;\nsort rating desc;\nlimit 30;"
+    payload = "fields name,cover.*,summary,first_release_date;\nwhere category = 0 & platforms = 48;\nsort rating desc;\nlimit 30;"
     headers = {
         'Client-ID': os.getenv('CLIENT_ID'),
         'Authorization': f"Bearer {os.getenv('ACCESS_TOKEN')}",
@@ -38,10 +40,6 @@ def igdb_proxy():
     
     return json.dumps(games)
 
-# TODO: Accounts and authentication :)  
-@app.route("/add-game", methods=['POST'])
-def add_game():
-    pass 
 
 if __name__ == "__main__":
     load_dotenv()
