@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint
 import http.client
 import json
 import random
@@ -17,7 +17,6 @@ def sample():
     return str(random.randint(0,100))
 
 @api_bp.route("/igdb-covers", methods=['GET'])
-@login_required
 def igdb_proxy():
     conn = http.client.HTTPSConnection("api.igdb.com")
     payload = "fields name,cover.*,summary,first_release_date;\nwhere category = 0 & platforms = 48;\nsort rating desc;\nlimit 30;"

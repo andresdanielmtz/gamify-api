@@ -1,5 +1,5 @@
 import sqlite3
-from flask import g
+from flask import g # g is a special object that is unique for each request
 
 DATABASE = 'main.db'
 
