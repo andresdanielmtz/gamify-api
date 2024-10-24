@@ -16,3 +16,4 @@ docs/_build/
 *.env
 *.db
 main.db
+cookies.txt
