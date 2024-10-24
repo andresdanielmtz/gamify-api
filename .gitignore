@@ -14,5 +14,5 @@ docs/_build/
 .venv
 .env
 *.env
-.db
 *.db
+main.db

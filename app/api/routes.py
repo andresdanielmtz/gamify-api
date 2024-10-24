@@ -1,25 +1,23 @@
-from flask import Flask, request
-from dotenv import load_dotenv
+from flask import Blueprint, jsonify
 import http.client
-import os 
-from flask_cors import CORS
-import random
 import json
+import random
+import os
+from ..auth.utils import login_required
 
-# TODO: Accounts and authentication :)  
+api_bp = Blueprint('api', __name__)
 
-app = Flask(__name__)
-CORS(app)  
-
-@app.route("/")
+@api_bp.route("/")
 def hello_world():
     return "<p>Hello, World!</p>"
-    
-@app.route("/sample")
-def sample():
-    return random.randint(0,100) # :DD
 
-@app.route("/igdb-covers", methods=['GET'])
+@api_bp.route("/sample")
+@login_required
+def sample():
+    return str(random.randint(0,100))
+
+@api_bp.route("/igdb-covers", methods=['GET'])
+@login_required
 def igdb_proxy():
     conn = http.client.HTTPSConnection("api.igdb.com")
     payload = "fields name,cover.*,summary,first_release_date;\nwhere category = 0 & platforms = 48;\nsort rating desc;\nlimit 30;"
@@ -31,7 +29,6 @@ def igdb_proxy():
     conn.request("POST", "/v4/games", payload, headers)
     res = conn.getresponse()
     data = res.read()
-    
     games = json.loads(data.decode("utf-8"))
     
     for game in games:
@@ -39,8 +36,3 @@ def igdb_proxy():
             game['cover']['url'] = game['cover']['url'].replace('t_thumb', 't_cover_big')
     
     return json.dumps(games)
-
-
-if __name__ == "__main__":
-    load_dotenv()
-    app.run(debug=True)
