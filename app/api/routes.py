@@ -38,8 +38,8 @@ def get_game(id):
 @api_bp.route("/igdb-covers", methods=['GET'])
 def igdb_proxy():
     # Default filters
-    category = 0
-    platforms = 48
+    category = 1
+    platforms = 49
     sort_by = "rating desc"
     limit = 50  # Increased limit
 
