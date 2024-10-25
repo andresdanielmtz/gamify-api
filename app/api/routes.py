@@ -48,6 +48,8 @@ def igdb_proxy():
     platforms = request.args.get('platforms', platforms)
     sort_by = request.args.get('sort_by', sort_by)
     limit = request.args.get('limit', limit)
+    
+
 
     conn = http.client.HTTPSConnection("api.igdb.com")
     payload = f"fields name,cover.*,summary,first_release_date;\nwhere category = {category} & platforms = {platforms};\nsort {sort_by};\nlimit {limit};"
@@ -56,6 +58,17 @@ def igdb_proxy():
         'Authorization': f"Bearer {os.getenv('ACCESS_TOKEN')}",
         'Content-Type': 'text/plain'
     }
+    conditions = []
+    if int(category) >= 0:
+        conditions.append(f"category = {category}")
+    if int(platforms) >= 0:
+        conditions.append(f"platforms = {platforms}")
+    
+    where_clause = " & ".join(conditions) if conditions else "1=1"
+    payload = f"fields name,cover.*,summary,first_release_date;\nwhere {where_clause};\nsort {sort_by};\nlimit {limit};"
+        
+    
+    
     conn.request("POST", "/v4/games", payload, headers)
     res = conn.getresponse()
     data = res.read()
