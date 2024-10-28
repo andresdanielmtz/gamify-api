@@ -35,28 +35,19 @@ def get_game(id):
     
     return json.dumps(game)
 
-@api_bp.route("/igdb-covers", methods=['GET'])
+@api_bp.route("/igdb-proxy", methods=['GET'])
 def igdb_proxy():
-    # Lower the limit for each page to improve response time
-    limit = int(request.args.get('limit', 20))  # Default to 20 for effective pagination
-    offset = int(request.args.get('offset', 0))  # Offset for pagination
+    category = request.args.get('category')
+    sort_by = request.args.get('sort_by')
+    limit = request.args.get('limit')
+    offset = request.args.get('offset')
+    platforms = request.args.get('platforms')
 
-    # Other query parameters as before
-    category = request.args.get('category', 1)
-    platforms = request.args.get('platforms', 49)
-    sort_by = request.args.get('sort_by', "rating desc")
+    # Construct the where_clause to include multiple platforms
+    platform_list = platforms.split(',')
+    platform_clause = ' | '.join([f'platforms = {platform}' for platform in platform_list])
+    where_clause = f"category = {category} & ({platform_clause})"
 
-    conn = http.client.HTTPSConnection("api.igdb.com")
-    
-    # Build the conditions for the where clause
-    conditions = []
-    if int(category) >= 0:
-        conditions.append(f"category = {category}")
-    if int(platforms) >= 0:
-        conditions.append(f"platforms = {platforms}")
-    
-    where_clause = " & ".join(conditions) if conditions else "1=1"
-    
     # Adjust the payload to include the offset and the reduced limit
     payload = (
         f"fields name,cover.*,summary,first_release_date;\n"
@@ -72,6 +63,7 @@ def igdb_proxy():
         'Content-Type': 'text/plain'
     }
     
+    conn = http.client.HTTPSConnection("api.igdb.com")
     conn.request("POST", "/v4/games", payload, headers)
     res = conn.getresponse()
     data = res.read()
@@ -83,3 +75,24 @@ def igdb_proxy():
             game['cover']['url'] = game['cover']['url'].replace('t_thumb', 't_cover_big')
 
     return json.dumps(games)
+
+
+@api_bp.route("/igdb-proxy/<string:name>", methods=['GET'])
+def get_game_by_name():
+    name = request.args.get('name')
+    conn = http.client.HTTPSConnection("api.igdb.com")
+    payload = f"fields name,cover.*,summary,first_release_date;\nsearch \"{name}\";"
+    headers = {
+        'Client-ID': os.getenv('CLIENT_ID'),
+        'Authorization': f"Bearer {os.getenv('ACCESS_TOKEN')}",
+        'Content-Type': 'text/plain'
+    }
+    conn.request("POST", "/v4/games", payload, headers)
+    res = conn.getresponse()
+    data = res.read()
+    game = json.loads(data.decode("utf-8"))[0]
+    
+    if 'cover' in game and 'url' in game['cover']:
+        game['cover']['url'] = game['cover']['url'].replace('t_thumb', 't_cover_big')
+    
+    return json.dumps(game)
