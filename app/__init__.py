@@ -6,7 +6,8 @@ from datetime import timedelta
 from .auth.routes import auth_bp
 from .api.routes import api_bp
 from flask_cors import CORS
-
+from flask_caching import Cache
+from .cache import cache
 
 def create_app():
     app = Flask(__name__)
@@ -24,6 +25,10 @@ def create_app():
             }
         },
     )
+    
+    cache.init_app(app, config={"CACHE_TYPE": "simple"})  # Initialize the cache with the app
+
+    
 
     # Development session configuration
     app.config.update(
@@ -45,7 +50,6 @@ def create_app():
     def home():
         return "Hello, World! \nThis is the backend of the application."
 
-
     # Simplified security headers for development
     @app.after_request
     def add_security_headers(response):
@@ -59,5 +63,6 @@ def create_app():
             }
         )
         return response
+
 
     return app

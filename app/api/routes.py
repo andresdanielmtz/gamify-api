@@ -4,6 +4,7 @@ import json
 import random
 import os
 from ..auth.utils import login_required
+from ..cache import cache
 
 api_bp = Blueprint('api', __name__)
 
@@ -36,15 +37,16 @@ def get_game(id):
     return json.dumps(game)
 
 @api_bp.route("/igdb-proxy", methods=['GET'])
+@cache.cached(timeout=300, query_string=True)  # Cache for 5 minutes
 def igdb_proxy():
     category = request.args.get('category')
     sort_by = request.args.get('sort_by')
     limit = request.args.get('limit')
     offset = request.args.get('offset')
     platforms = request.args.get('platforms')
-    
+
     if not limit: limit = 100
-    
+
     # Construct the where_clause to include multiple platforms
     platform_list = platforms.split(',')
     platform_clause = ' | '.join([f'platforms = {platform}' for platform in platform_list])
@@ -52,13 +54,9 @@ def igdb_proxy():
         category_clause = ''
     else:
         category_clause = f'category = {category} &'
-    
+
     where_clause = f"{category_clause} ({platform_clause})"
 
-    # Adjust the payload to include the offset and the reduced limit
-    
-    
-    
     payload = (
         f"fields name,cover.*,summary,first_release_date;\n"
         f"where {where_clause};\n"
@@ -66,13 +64,13 @@ def igdb_proxy():
         f"limit {limit};\n"
         f"offset {offset};"
     )
-    
+
     headers = {
         'Client-ID': os.getenv('CLIENT_ID'),
         'Authorization': f"Bearer {os.getenv('ACCESS_TOKEN')}",
         'Content-Type': 'text/plain'
     }
-    
+
     conn = http.client.HTTPSConnection("api.igdb.com")
     conn.request("POST", "/v4/games", payload, headers)
     res = conn.getresponse()
@@ -85,24 +83,3 @@ def igdb_proxy():
             game['cover']['url'] = game['cover']['url'].replace('t_thumb', 't_cover_big')
 
     return json.dumps(games)
-
-
-@api_bp.route("/igdb-proxy/<string:name>", methods=['GET'])
-def get_game_by_name():
-    name = request.args.get('name')
-    conn = http.client.HTTPSConnection("api.igdb.com")
-    payload = f"fields name,cover.*,summary,first_release_date;\nsearch \"{name}\";"
-    headers = {
-        'Client-ID': os.getenv('CLIENT_ID'),
-        'Authorization': f"Bearer {os.getenv('ACCESS_TOKEN')}",
-        'Content-Type': 'text/plain'
-    }
-    conn.request("POST", "/v4/games", payload, headers)
-    res = conn.getresponse()
-    data = res.read()
-    game = json.loads(data.decode("utf-8"))[0]
-    
-    if 'cover' in game and 'url' in game['cover']:
-        game['cover']['url'] = game['cover']['url'].replace('t_thumb', 't_cover_big')
-    
-    return json.dumps(game)
