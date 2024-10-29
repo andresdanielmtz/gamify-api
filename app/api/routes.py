@@ -48,7 +48,7 @@ def igdb_proxy():
     # Construct the where_clause to include multiple platforms
     platform_list = platforms.split(',')
     platform_clause = ' | '.join([f'platforms = {platform}' for platform in platform_list])
-    if category == "1" or category == '':
+    if category == '1' or category == '':
         category_clause = ''
     else:
         category_clause = f'category = {category} &'
