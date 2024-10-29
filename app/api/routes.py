@@ -42,13 +42,23 @@ def igdb_proxy():
     limit = request.args.get('limit')
     offset = request.args.get('offset')
     platforms = request.args.get('platforms')
-
+    
+    if not limit: limit = 100
+    
     # Construct the where_clause to include multiple platforms
     platform_list = platforms.split(',')
     platform_clause = ' | '.join([f'platforms = {platform}' for platform in platform_list])
-    where_clause = f"category = {category} & ({platform_clause})"
+    if category == "1" or category == '':
+        category_clause = ''
+    else:
+        category_clause = f'category = {category} &'
+    
+    where_clause = f"{category_clause} ({platform_clause})"
 
     # Adjust the payload to include the offset and the reduced limit
+    
+    
+    
     payload = (
         f"fields name,cover.*,summary,first_release_date;\n"
         f"where {where_clause};\n"
