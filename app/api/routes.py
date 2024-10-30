@@ -5,6 +5,7 @@ import random
 import os
 from ..auth.utils import login_required
 from ..cache import cache
+from ..login import login_manager
 
 api_bp = Blueprint('api', __name__)
 

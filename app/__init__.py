@@ -6,8 +6,8 @@ from datetime import timedelta
 from .auth.routes import auth_bp
 from .api.routes import api_bp
 from flask_cors import CORS
-from flask_caching import Cache
 from .cache import cache
+from .login import login_manager
 
 def create_app():
     app = Flask(__name__)
@@ -27,8 +27,7 @@ def create_app():
     )
     
     cache.init_app(app, config={"CACHE_TYPE": "simple"})  # Initialize the cache with the app
-
-    
+    login_manager.init_app(app)  # Initialize the login manager with the app
 
     # Development session configuration
     app.config.update(
