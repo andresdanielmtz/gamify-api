@@ -57,8 +57,12 @@ def igdb_proxy():
 
 
     platform_clause = f"platforms = {platforms}" 
-    if category == "-1" or category == "":
+    if category == "1":
+        print("Category is -1")
         category_clause = ""
+    elif category == "-1": 
+        print("Category is -1")
+        category_clause = "category = 1 &"
     else:
         category_clause = f"category = {category} &"
 
