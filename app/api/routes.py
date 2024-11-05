@@ -49,12 +49,13 @@ def igdb_proxy():
     limit = request.args.get("limit")
     offset = request.args.get("offset")
     platforms = request.args.get("platforms")
+    
+    print(f"Sort by: {sort_by}")
 
-    print(f"Platform given: {platforms}") # ?? 
     if not limit:
         limit = 100
 
-    # Construct the where_clause to include multiple platforms
+
     platform_clause = f"platforms = {platforms}" 
     if category == "1" or category == "":
         category_clause = ""
@@ -66,12 +67,11 @@ def igdb_proxy():
     payload = (
         f"fields name,cover.*,summary,first_release_date;\n"
         f"where {where_clause};\n"
-        f"sort {sort_by};\n"
         f"limit {limit};\n"
+        f"sort {sort_by};\n"
         f"offset {offset};"
+ 
     )
-
-    print(f"The entire body being: {payload}")
 
     headers = {
         "Client-ID": os.getenv("CLIENT_ID"),
@@ -85,7 +85,6 @@ def igdb_proxy():
     data = res.read()
     games = json.loads(data.decode("utf-8"))
 
-    # Adjust cover URLs if needed
     for game in games:
         if "cover" in game and "url" in game["cover"]:
             game["cover"]["url"] = game["cover"]["url"].replace(

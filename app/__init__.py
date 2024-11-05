@@ -1,7 +1,6 @@
 from flask import Flask
 from .database import init_db
 from dotenv import load_dotenv
-import os
 from datetime import timedelta
 from .auth.routes import auth_bp
 from .api.routes import api_bp
