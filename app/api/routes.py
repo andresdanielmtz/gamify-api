@@ -57,7 +57,7 @@ def igdb_proxy():
 
 
     platform_clause = f"platforms = {platforms}" 
-    if category == "1" or category == "":
+    if category == "-1" or category == "":
         category_clause = ""
     else:
         category_clause = f"category = {category} &"
@@ -72,7 +72,9 @@ def igdb_proxy():
         f"offset {offset};"
  
     )
-
+    
+    print(f"Payload: {payload}") # : ) 
+    
     headers = {
         "Client-ID": os.getenv("CLIENT_ID"),
         "Authorization": f"Bearer {os.getenv('ACCESS_TOKEN')}",
